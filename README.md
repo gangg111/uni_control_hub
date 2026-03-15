@@ -66,7 +66,7 @@ sudo pacman -S qt5-base
 ## Screenshot
 
 <p align="start">
-  <img src="https://github.com/rohitsangwan01/uni_control_hub/assets/59526499/7b2b87c3-4501-490b-a205-0e3815c4b583" height=400 />
+  <img src="https://raw.githubusercontent.com/gangg111/uni_control_hub/main/screenshot.jpg" height=400 />
 </p>
 
 ## Demo
