@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -29,6 +30,14 @@ class ClientScreen extends ScreenInterface {
   int relativeY = 0;
   int? buttonPressed;
 
+  int _accumX = 0;
+  int _accumY = 0;
+  Timer? _mouseTimer;
+  int _lastSentMs = 0;
+  // 15 ms = one BLE connection interval on Android — the max rate Windows BLE
+  // peripheral can deliver notifications without the internal queue growing.
+  static const _bleIntervalMs = 15;
+
   @override
   void mouseDown(int buttonID) {
     var reportData = Uint8List(5);
@@ -59,29 +68,51 @@ class ClientScreen extends ScreenInterface {
 
   @override
   void mouseMove(int x, int y) {
-    var reportData = Uint8List(5);
-    reportData[0] = 0x02; // Report ID
-    reportData[1] = buttonPressed ?? 0; // Button state
-    reportData[2] = x - relativeX; // X movement
-    reportData[3] = y - relativeY; // Y movement
-    reportData[4] = 0; // Wheel movement
-    _addInputReport(reportData);
+    _accumX += x - relativeX;
+    _accumY += y - relativeY;
     relativeX = x;
     relativeY = y;
     onMouseMove?.call(x, y);
+    _scheduleMouse();
   }
 
   @override
   void mouseRelativeMove(int x, int y) {
-    var reportData = Uint8List(5);
-    reportData[0] = 0x02; // Report ID
-    reportData[1] = buttonPressed ?? 0; // Button state
-    reportData[2] = x; // X movement
-    reportData[3] = y; // Y movement
-    reportData[4] = 0; // Wheel movement
-    _addInputReport(reportData);
-    relativeX = x;
-    relativeY = y;
+    _accumX += x;
+    _accumY += y;
+    _scheduleMouse();
+  }
+
+  void _scheduleMouse() {
+    if (_mouseTimer != null) return; // timer already running, delta will be caught
+    final elapsed = DateTime.now().millisecondsSinceEpoch - _lastSentMs;
+    if (elapsed >= _bleIntervalMs) {
+      // BLE window is free — send right now, zero added latency
+      _flushMouse();
+    } else {
+      // Inside the current window — wait only the remaining slice
+      _mouseTimer = Timer(
+        Duration(milliseconds: _bleIntervalMs - elapsed),
+        _flushMouse,
+      );
+    }
+  }
+
+  void _flushMouse() {
+    _mouseTimer = null;
+    _lastSentMs = DateTime.now().millisecondsSinceEpoch;
+    final int dx = _accumX;
+    final int dy = _accumY;
+    _accumX = 0;
+    _accumY = 0;
+    if (dx == 0 && dy == 0) return;
+    var r = Uint8List(5);
+    r[0] = 0x02;
+    r[1] = buttonPressed ?? 0;
+    r[2] = dx.clamp(-127, 127) & 0xFF;
+    r[3] = dy.clamp(-127, 127) & 0xFF;
+    r[4] = 0;
+    _addInputReport(r);
   }
 
   @override
@@ -209,15 +240,9 @@ class ClientScreen extends ScreenInterface {
   }
 
   void _moveMouseMultipleEvents({int? x, int? y, int count = 100}) {
-    for (int i = 0; i < count; i++) {
-      var reportData = Uint8List(5);
-      reportData[0] = 0x02; // Report ID
-      reportData[1] = 0; // Button state
-      reportData[2] = x ?? 0; // X movement
-      reportData[3] = y ?? 0; // Y movement
-      reportData[4] = 0; // Wheel movement
-      _addInputReport(reportData);
-    }
+    _accumX += (x ?? 0) * count;
+    _accumY += (y ?? 0) * count;
+    _scheduleMouse();
   }
 
   Future<void> _addInputReport(List<int> inputReport) =>

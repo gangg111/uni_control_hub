@@ -133,6 +133,21 @@ class BlePeripheralCommunication {
       _handleCharacteristicSubscriptionChange,
     );
 
+    // Android BLE centrals signal readiness via connection state, not
+    // characteristic subscription. Register the callback so Android phones
+    // are added/removed as clients just like iOS devices.
+    BlePeripheral.setConnectionStateChangeCallback((deviceId, connected) {
+      if (connected) {
+        if (_addNewClient(deviceId)) {
+          logInfo("BLE device connected (Android): $deviceId");
+        }
+      } else if (_communicationService.existsDevice(deviceId)) {
+        if (_communicationService.removeClient(deviceId)) {
+          logInfo("BLE device disconnected: $deviceId");
+        }
+      }
+    });
+
     BlePeripheral.setReadRequestCallback(
       _blePeripheralUtils.onReadRequest,
     );
