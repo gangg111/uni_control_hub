@@ -1,7 +1,8 @@
 # UniControlHub
 
-[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/rohitsangwan01)
-![Downloads](https://img.shields.io/github/downloads/rohitsangwan01/uni_control_hub/total.svg)
+> **Fork** of [rohitsangwan01/uni_control_hub](https://github.com/rohitsangwan01/uni_control_hub) with Polish UI translation and Android BLE fixes.
+
+![Downloads](https://img.shields.io/github/downloads/gangg111/uni_control_hub/total.svg)
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/41c886c0-f08c-4186-bc98-153aa2769d13" height=150 />
@@ -15,12 +16,12 @@ UniControlHub revolutionizes the way you interact with your digital environment 
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 
-<a href="https://buymeacoffee.com/rohitsangwan" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
+
 
 
 ## Getting Started
 
-Download app for your platform from [Release](https://github.com/rohitsangwan01/uni_control_hub/releases) section
+Download app for your platform from [Release](https://github.com/gangg111/uni_control_hub/releases) section
 
 ### MacOS
 
@@ -60,7 +61,7 @@ sudo pacman -S qt5-base
 | Platform | Bluetooth | USB | ADB |
 | -------- | --------- | --- | --- |
 | IOS      | ✅        | ❌  | ❌  |
-| Android  | ⏳        | ✅  | ✅  |
+| Android  | ✅        | ✅  | ✅  |
 
 ## Screenshot
 
@@ -92,11 +93,9 @@ This section guides you through setting up and running UniControlHub for develop
 
 - Once Flutter is set up, run `flutter pub get` to download dependencies, and run `flutter run` to start the app
 
-## Sponsor
+## Credits
 
-If you find this project useful, consider sponsoring it! Your support helps keep development active, adds new features, and improves stability. You can also share your ideas or feedback in the [Discussions](https://github.com/rohitsangwan01/uni_control_hub/discussions). Thanks for your support! 🚀
-
-[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/rohitsangwan01)
+Original project by [rohitsangwan01](https://github.com/rohitsangwan01/uni_control_hub). If you find the original useful, consider supporting the original author.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/rohitsangwan)
 
