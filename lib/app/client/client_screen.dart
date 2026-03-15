@@ -33,6 +33,7 @@ class ClientScreen extends ScreenInterface {
   int _accumX = 0;
   int _accumY = 0;
   Timer? _mouseTimer;
+  final Stopwatch _mouseStopwatch = Stopwatch()..start();
   int _lastSentMs = 0;
   // 15 ms = one BLE connection interval on Android — the max rate Windows BLE
   // peripheral can deliver notifications without the internal queue growing.
@@ -85,7 +86,7 @@ class ClientScreen extends ScreenInterface {
 
   void _scheduleMouse() {
     if (_mouseTimer != null) return; // timer already running, delta will be caught
-    final elapsed = DateTime.now().millisecondsSinceEpoch - _lastSentMs;
+    final elapsed = _mouseStopwatch.elapsedMilliseconds - _lastSentMs;
     if (elapsed >= _bleIntervalMs) {
       // BLE window is free — send right now, zero added latency
       _flushMouse();
@@ -100,19 +101,23 @@ class ClientScreen extends ScreenInterface {
 
   void _flushMouse() {
     _mouseTimer = null;
-    _lastSentMs = DateTime.now().millisecondsSinceEpoch;
-    final int dx = _accumX;
-    final int dy = _accumY;
-    _accumX = 0;
-    _accumY = 0;
+    if (_accumX == 0 && _accumY == 0) return;
+    final int dx = _accumX.clamp(-127, 127);
+    final int dy = _accumY.clamp(-127, 127);
+    _accumX -= dx;
+    _accumY -= dy;
     if (dx == 0 && dy == 0) return;
+    _lastSentMs = _mouseStopwatch.elapsedMilliseconds;
     var r = Uint8List(5);
     r[0] = 0x02;
     r[1] = buttonPressed ?? 0;
-    r[2] = dx.clamp(-127, 127) & 0xFF;
-    r[3] = dy.clamp(-127, 127) & 0xFF;
+    r[2] = dx & 0xFF;
+    r[3] = dy & 0xFF;
     r[4] = 0;
     _addInputReport(r);
+    if (_accumX != 0 || _accumY != 0) {
+      _scheduleMouse();
+    }
   }
 
   @override
@@ -240,9 +245,14 @@ class ClientScreen extends ScreenInterface {
   }
 
   void _moveMouseMultipleEvents({int? x, int? y, int count = 100}) {
-    _accumX += (x ?? 0) * count;
-    _accumY += (y ?? 0) * count;
-    _scheduleMouse();
+    if (count <= 0) return;
+    final int dx = x ?? 0;
+    final int dy = y ?? 0;
+    for (int i = 0; i < count; i++) {
+      _accumX += dx;
+      _accumY += dy;
+      _scheduleMouse();
+    }
   }
 
   Future<void> _addInputReport(List<int> inputReport) =>
